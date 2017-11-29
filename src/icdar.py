@@ -126,8 +126,8 @@ def crop_area(im, polys, tags, crop_background=False, max_tries=50):
     :return:
     '''
     h, w, _ = im.shape
-    pad_h = h//10
-    pad_w = w//10
+    pad_h = 0
+    pad_w = 0
     h_array = np.zeros((h + pad_h*2), dtype=np.int32)
     w_array = np.zeros((w + pad_w*2), dtype=np.int32)
     for poly in polys:
@@ -139,44 +139,55 @@ def crop_area(im, polys, tags, crop_background=False, max_tries=50):
         maxy = np.max(poly[:, 1])
         h_array[miny+pad_h:maxy+pad_h] = 1
     # ensure the cropped area not across a text
-    h_axis = np.where(h_array == 0)[0]
-    w_axis = np.where(w_array == 0)[0]
-    if len(h_axis) == 0 or len(w_axis) == 0:
-        return im, polys, tags
+    h_axis_0 = np.where(h_array == 0)[0]
+    w_axis_0 = np.where(w_array == 0)[0]
+    h_axis_1 = np.where(h_array == 1)[0]
+    w_axis_1 = np.where(w_array == 1)[0]
     for i in range(max_tries):
-        xx = np.random.choice(w_axis, size=2)
-        xmin = np.min(xx) - pad_w
-        xmax = np.max(xx) - pad_w
-        xmin = np.clip(xmin, 0, w-1)
-        xmax = np.clip(xmax, 0, w-1)
-        yy = np.random.choice(h_axis, size=2)
-        ymin = np.min(yy) - pad_h
-        ymax = np.max(yy) - pad_h
-        ymin = np.clip(ymin, 0, h-1)
-        ymax = np.clip(ymax, 0, h-1)
-        if xmax - xmin < FLAGS.min_crop_side_ratio*w or ymax - ymin < FLAGS.min_crop_side_ratio*h:
-            # area too small
-            continue
-        if polys.shape[0] != 0:
-            poly_axis_in_area = (polys[:, :, 0] >= xmin) & (polys[:, :, 0] <= xmax) \
-                                & (polys[:, :, 1] >= ymin) & (polys[:, :, 1] <= ymax)
-            selected_polys = np.where(np.sum(poly_axis_in_area, axis=1) == 4)[0]
+        if crop_background:
+            xx = np.random.choice(w_axis_0, size=1)[0]
+            yy = np.random.choice(h_axis_0, size=1)[0]
         else:
-            selected_polys = []
-        if len(selected_polys) == 0:
-            # no text in this area
-            if crop_background:
-                return im[ymin:ymax+1, xmin:xmax+1, :], polys[selected_polys], tags[selected_polys]
+            xx = np.random.choice(w_axis_1, size=1)[0]
+            yy = np.random.choice(h_axis_1, size=1)[0]
+        chopped_box_xy = np.array([[max(0, xx-114), max(0, yy-114)], 
+                                   [min(w, xx+113), max(0, yy-114)],
+                                   [min(w, xx+113), min(h, yy+113)],
+                                   [max(0, xx-114), min(h, yy+113)]])
+        chopped_box = Polygon(chopped_box_xy)
+        id_box = Polygon(polys[0])
+        cross_box = id_box.intersection(chopped_box)
+        ratio = cross_box.area / 227.0 / 227.0
+        if crop_background:
+            if ratio <= 0.3:
+                minx = np.min(chopped_box_xy[:, 0])
+                maxx = np.max(chopped_box_xy[:, 0])
+                miny = np.min(chopped_box_xy[:, 1])
+                maxy = np.max(chopped_box_xy[:, 1])
+                chopped_box_im = im[miny:maxy, minx:maxx, :]
+                return chopped_box_im, np.array([chopped_box_xy]), []
             else:
                 continue
-        im = im[ymin:ymax+1, xmin:xmax+1, :]
-        polys = polys[selected_polys]
-        tags = tags[selected_polys]
-        polys[:, :, 0] -= xmin
-        polys[:, :, 1] -= ymin
-        return im, polys, tags
-
-    return im, polys, tags
+        else:
+            if ratio > 0.5:
+                minx = np.min(chopped_box_xy[:, 0])
+                maxx = np.max(chopped_box_xy[:, 0])
+                miny = np.min(chopped_box_xy[:, 1])
+                maxy = np.max(chopped_box_xy[:, 1])
+                chopped_box_im = im[miny:maxy, minx:maxx, :]
+                return chopped_box_im, np.array([chopped_box_xy]), tags
+            else:
+                continue
+        
+    minx = np.min(chopped_box_xy[:, 0])
+    maxx = np.max(chopped_box_xy[:, 0])
+    miny = np.min(chopped_box_xy[:, 1])
+    maxy = np.max(chopped_box_xy[:, 1])
+    chopped_box_im = im[miny:maxy, minx:maxx, :]
+    if crop_background:
+        return chopped_box_im, np.array([chopped_box_xy]), tags
+    else:
+        return chopped_box_im, np.array([chopped_box_xy]), []
 
 
 def shrink_poly(poly, r):
@@ -584,7 +595,7 @@ def generate_rbox(im_size, polys, tags):
 
 
 def generator(input_size=512, batch_size=32,
-              background_ratio=3./8,
+              background_ratio=3./10,
               random_scale=np.array([0.5, 1, 2.0, 3.0]),
               labels = {}, 
               vis=False):
@@ -623,36 +634,31 @@ def generator(input_size=512, batch_size=32,
                 if np.random.rand() < background_ratio:
                     # crop background
                     im, text_polys, text_tags = crop_area(im, text_polys, text_tags, crop_background=True)
-                    if text_polys.shape[0] > 0:
+                    if len(text_tags) > 0:
                         # cannot find background
                         continue
                     # pad and resize image
                     new_h, new_w, _ = im.shape
-                    max_h_w_i = np.max([new_h, new_w, input_size])
-                    im_padded = np.zeros((max_h_w_i, max_h_w_i, 3), dtype=np.uint8)
-                    im_padded[:new_h, :new_w, :] = im.copy()
-                    im = cv2.resize(im_padded, dsize=(input_size, input_size))
+                    if new_h != input_size or new_w != input_size:
+                        im_padded = np.zeros((input_size, input_size, 3), dtype=np.uint8)
+                        im_padded[:new_h, :new_w, :] = im.copy()
+                        im = im_padded
                     #score_map = np.zeros((input_size, input_size), dtype=np.uint8)
                     #geo_map_channels = 5 if FLAGS.geometry == 'RBOX' else 8
                     #geo_map = np.zeros((input_size, input_size, geo_map_channels), dtype=np.float32)
                     #training_mask = np.ones((input_size, input_size), dtype=np.uint8)
                 else:
                     im, text_polys, text_tags = crop_area(im, text_polys, text_tags, crop_background=False)
-                    if text_polys.shape[0] == 0:
+                    if len(text_tags) == 0:
                         continue
                     h, w, _ = im.shape
 
                     # pad the image to the training input size or the longer side of image
                     new_h, new_w, _ = im.shape
-                    max_h_w_i = np.max([new_h, new_w, input_size])
-                    im_padded = np.zeros((max_h_w_i, max_h_w_i, 3), dtype=np.uint8)
-                    im_padded[:new_h, :new_w, :] = im.copy()
-                    im = im_padded
-                    # resize the image to input size
-                    new_h, new_w, _ = im.shape
-                    resize_h = input_size
-                    resize_w = input_size
-                    im = cv2.resize(im, dsize=(resize_w, resize_h))
+                    if new_h != input_size or new_w != input_size:
+                        im_padded = np.zeros((input_size, input_size, 3), dtype=np.uint8)
+                        im_padded[:new_h, :new_w, :] = im.copy()
+                        im = im_padded
                     #resize_ratio_3_x = resize_w/float(new_w)
                     #resize_ratio_3_y = resize_h/float(new_h)
                     #text_polys[:, :, 0] *= resize_ratio_3_x
@@ -661,7 +667,7 @@ def generator(input_size=512, batch_size=32,
                     #score_map, geo_map, training_mask = generate_rbox((new_h, new_w), text_polys, text_tags)
 
                 if vis:
-                    fig, axs = plt.subplots(3, 2, figsize=(20, 30))
+                    fig, axs = plt.subplots(1, 1, figsize=(20, 30))
                     # axs[0].imshow(im[:, :, ::-1])
                     # axs[0].set_xticks([])
                     # axs[0].set_yticks([])
@@ -675,15 +681,18 @@ def generator(input_size=512, batch_size=32,
                     # axs[1].imshow(score_map)
                     # axs[1].set_xticks([])
                     # axs[1].set_yticks([])
-                    axs[0, 0].imshow(im[:, :, ::-1])
-                    axs[0, 0].set_xticks([])
-                    axs[0, 0].set_yticks([])
-                    for poly in text_polys:
-                        poly_h = min(abs(poly[3, 1] - poly[0, 1]), abs(poly[2, 1] - poly[1, 1]))
-                        poly_w = min(abs(poly[1, 0] - poly[0, 0]), abs(poly[2, 0] - poly[3, 0]))
-                        axs[0, 0].add_artist(Patches.Polygon(
-                            poly, facecolor='none', edgecolor='green', linewidth=2, linestyle='-', fill=True))
-                        axs[0, 0].text(poly[0, 0], poly[0, 1], '{:.0f}-{:.0f}'.format(poly_h, poly_w), color='purple')
+                    axs.imshow(im[:, :, ::-1])
+                    axs.set_xticks([])
+                    axs.set_yticks([])
+                    xx = im.shape[1] // 2
+                    yy = im.shape[0] // 2
+                    if len(text_tags) == 0:
+                        axs.text(xx, yy, 'background', color='purple')
+                    elif text_tags[0] == 0:
+                        axs.text(xx, yy, 'negedge', color='purple')
+                    else:
+                        axs.text(xx, yy, 'posedge', color='purple')
+                    print 'text_tags: ', text_tags
                     #axs[0, 1].imshow(score_map[::, ::])
                     #axs[0, 1].set_xticks([])
                     #axs[0, 1].set_yticks([])
@@ -803,11 +812,12 @@ if __name__ == '__main__':
     nb_classes = 6
     b = indices_to_one_hot(a, nb_classes)
     c = one_hot_to_indices(b)
-    a = generator(input_size=227, batch_size=14, labels=labels, vis=False)
+    a = generator(input_size=227, batch_size=4, labels=labels, vis=False)
     sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
     model = convnet('alexnet', heatmap=False)
     model.compile(optimizer=sgd, loss='mse', metrics=['accuracy'])
     while True:
         img, y_true = next(a)
         y_pred = model.predict(np.array(img))
+        print ((y_pred - y_true)**2).mean()
         print 'end'
