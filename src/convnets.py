@@ -278,8 +278,10 @@ def AlexNet(weights_path=None, heatmap=False):
         dense_2 = Dropout(0.5)(dense_1)
         dense_2 = Dense(4096, activation='relu', name='dense_2')(dense_2)
         dense_3 = Dropout(0.5)(dense_2)
-        dense_3 = Dense(3, name='dense_3')(dense_3)
-        prediction = Activation('softmax', name='softmax')(dense_3)
+        dense_3 = Dense(1000, name='dense_3')(dense_3)
+        dense_4 = Dropout(0.5)(dense_3)
+        dense_4 = Dense(3, name='dense_4')(dense_4)
+        prediction = Activation('softmax', name='softmax')(dense_4)
 
     model = Model(inputs=inputs, outputs=prediction)
 

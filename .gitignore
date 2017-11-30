@@ -112,3 +112,4 @@ testimg
 testimg_neg
 testimg_pos
 wingd*
+*.pyc
