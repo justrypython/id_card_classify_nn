@@ -113,3 +113,5 @@ testimg_neg
 testimg_pos
 wingd*
 *.pyc
+src/model
+src/test_model
