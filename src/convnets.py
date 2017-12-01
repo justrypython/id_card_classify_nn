@@ -17,6 +17,7 @@ from keras.models import Sequential
 from keras.optimizers import SGD
 from scipy.misc import imread
 from scipy.misc import imresize
+import h5py
 
 
 def convnet(network, weights_path=None, heatmap=False, trainable=None):
@@ -69,10 +70,14 @@ def convnet(network, weights_path=None, heatmap=False, trainable=None):
             elif layer.name.startswith('dense'):
                 orig_layer = convnet.get_layer(layer.name)
                 W, b = orig_layer.get_weights()
-                n_filter, previous_filter, ax1, ax2 = layer.get_weights()[0].shape
-                new_W = W.reshape((previous_filter, ax1, ax2, n_filter))
-                new_W = new_W.transpose((3, 0, 1, 2))
-                new_W = new_W[:, :, ::-1, ::-1]
+                #n_filter, previous_filter, ax1, ax2 = layer.get_weights()[0].shape
+                #new_W = W.reshape((previous_filter, ax1, ax2, n_filter))
+                #new_W = new_W.transpose((3, 0, 1, 2))
+                #new_W = new_W[:, :, ::-1, ::-1]
+                ax1, ax2, previous_filter, n_filter = layer.get_weights()[0].shape
+                new_W = W.reshape((ax1, ax2, previous_filter, n_filter))
+                #new_W = new_W.transpose((1, 2, 0, 3))
+                #new_W = new_W[::-1, ::-1, :, :]
                 layer.set_weights([new_W, b])
         return convnet_heatmap
 
@@ -268,10 +273,14 @@ def AlexNet(weights_path=None, heatmap=False):
     dense_1 = MaxPooling2D((3, 3), strides=(2, 2), name='convpool_5')(conv_5)
 
     if heatmap:
-        dense_1 = Conv2D(4096, (2, 2), activation='relu', name='dense_1')(dense_1)
-        dense_2 = Conv2D(4096, (1, 1), activation='relu', name='dense_2')(dense_1)
-        dense_3 = Conv2D(3, (1, 1), name='dense_3')(dense_2)
-        prediction = Softmax4D(axis=1, name='softmax')(dense_3)
+        dense_1 = Conv2D(4096, (6, 6), activation='relu', name='dense_1')(dense_1)
+        dense_2 = Dropout(0.5)(dense_1)
+        dense_2 = Conv2D(4096, (1, 1), activation='relu', name='dense_2')(dense_2)
+        dense_3 = Dropout(0.5)(dense_2)
+        dense_3 = Conv2D(1000, (1, 1), name='dense_3')(dense_3)
+        dense_4 = Dropout(0.5)(dense_3)
+        dense_4 = Conv2D(3, (1, 1), name='dense_4')(dense_4)
+        prediction = Softmax4D(axis=1, name='softmax')(dense_4)
     else:
         dense_1 = Flatten(name='flatten')(dense_1)
         dense_1 = Dense(4096, activation='relu', name='dense_1')(dense_1)

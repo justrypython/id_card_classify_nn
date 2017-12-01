@@ -47,7 +47,102 @@ def main():
     print 'load end!!!'
     print 'save weights'
     model.save_weights('model/tf_alexnet_weights.h5')
-        
+    
+def compare_weights():
+    dense_file = h5py.File('test_model/dense.h5', 'r')
+    conv_file = h5py.File('test_model/conv.h5', 'r')
+    for i in dense_file.keys():
+        print i, 'is in dense'
+        if i in conv_file.keys():
+            print '%s also in conv'%i
+        else:
+            print '%s not in conv'%i
+    dense_w1 = dense_file['dense_1']['dense_1']['kernel:0']
+    dense_b1 = dense_file['dense_1']['dense_1']['bias:0']
+    conv_w1 = conv_file['dense_1']['dense_1_1']['kernel:0']
+    conv_b1 = conv_file['dense_1']['dense_1_1']['bias:0']
+    
+    a = conv_w1.value
+    b = dense_w1.value
+    a = a.reshape(b.shape)
+    print np.all(a==b)
+    
+    dense_w2 = dense_file['dense_2']['dense_2']['kernel:0']
+    dense_b2 = dense_file['dense_2']['dense_2']['bias:0']
+    conv_w2 = conv_file['dense_2']['dense_2_1']['kernel:0']
+    conv_b2 = conv_file['dense_2']['dense_2_1']['bias:0']
+    
+    a = conv_w2.value
+    b = dense_w2.value
+    a = a.reshape(b.shape)
+    print np.all(a==b)
+    
+    dense_w3 = dense_file['dense_3']['dense_3']['kernel:0']
+    dense_b3 = dense_file['dense_3']['dense_3']['bias:0']
+    conv_w3 = conv_file['dense_3']['dense_3_1']['kernel:0']
+    conv_b3 = conv_file['dense_3']['dense_3_1']['bias:0']
+    
+    a = conv_w3.value
+    b = dense_w3.value
+    a = a.reshape(b.shape)
+    print np.all(a==b)
+    
+    dense_w4 = dense_file['dense_4']['dense_4']['kernel:0']
+    dense_b4 = dense_file['dense_4']['dense_4']['bias:0']
+    conv_w4 = conv_file['dense_4']['dense_4_1']['kernel:0']
+    conv_b4 = conv_file['dense_4']['dense_4_1']['bias:0']
+    
+    a = conv_w4.value
+    b = dense_w4.value
+    a = a.reshape(b.shape)
+    print np.all(a==b)
+    
+    dense_file.close()
+    conv_file.close()
+    
+def set_weights():
+    dense_file = h5py.File('test_model/dense.h5', 'r')
+    conv_file = h5py.File('test_model/conv.h5', 'r+')
+    for i in dense_file.keys():
+        print i, 'is in dense'
+        if i in conv_file.keys():
+            print '%s also in conv'%i
+        else:
+            print '%s not in conv'%i
+    dense_w1 = dense_file['dense_1']['dense_1']['kernel:0']
+    dense_b1 = dense_file['dense_1']['dense_1']['bias:0']
+    conv_w1 = conv_file['dense_1']['dense_1_1']['kernel:0'].value
+    conv_b1 = conv_file['dense_1']['dense_1_1']['bias:0']
+    
+    conv_file.__delitem__('dense_1/dense_1_1/kernel:0')
+    conv_file['dense_1']['dense_1_1']['kernel:0'] = dense_w1.value.reshape(conv_w1.shape)
+    
+    dense_w2 = dense_file['dense_2']['dense_2']['kernel:0']
+    dense_b2 = dense_file['dense_2']['dense_2']['bias:0']
+    conv_w2 = conv_file['dense_2']['dense_2_1']['kernel:0'].value
+    conv_b2 = conv_file['dense_2']['dense_2_1']['bias:0']
+
+    conv_file.__delitem__('dense_2/dense_2_1/kernel:0')
+    conv_file['dense_2']['dense_2_1']['kernel:0'] = dense_w2.value.reshape(conv_w2.shape)    
+    
+    dense_w3 = dense_file['dense_3']['dense_3']['kernel:0']
+    dense_b3 = dense_file['dense_3']['dense_3']['bias:0']
+    conv_w3 = conv_file['dense_3']['dense_3_1']['kernel:0'].value
+    conv_b3 = conv_file['dense_3']['dense_3_1']['bias:0']
+
+    conv_file.__delitem__('dense_3/dense_3_1/kernel:0')
+    conv_file['dense_3']['dense_3_1']['kernel:0'] = dense_w3.value.reshape(conv_w3.shape)  
+    
+    dense_w4 = dense_file['dense_4']['dense_4']['kernel:0']
+    dense_b4 = dense_file['dense_4']['dense_4']['bias:0']
+    conv_w4 = conv_file['dense_4']['dense_4_1']['kernel:0'].value
+    conv_b4 = conv_file['dense_4']['dense_4_1']['bias:0']
+
+    conv_file.__delitem__('dense_4/dense_4_1/kernel:0')
+    conv_file['dense_4']['dense_4_1']['kernel:0'] = dense_w4.value.reshape(conv_w4.shape)
+    
+    dense_file.close()
+    conv_file.close()
         
 if __name__ == '__main__':
-    main()
+    compare_weights()

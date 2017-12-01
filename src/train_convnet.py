@@ -31,7 +31,7 @@ def main():
     # 2: Build the Keras model
     sgd = SGD(lr=0.01, decay=5e-4, momentum=0.9, nesterov=True)
     
-    model = convnet('alexnet', heatmap=False)
+    model = convnet('alexnet', heatmap=True)
     model.compile(optimizer=sgd, loss='mse', metrics=['accuracy'])
     model.load_weights(data_path)
 

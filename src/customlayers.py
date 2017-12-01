@@ -4,6 +4,7 @@ from keras.engine import Layer
 from keras.layers.convolutional import Convolution2D
 from keras.layers.core import Lambda
 from keras.layers import merge
+import tensorflow as tf
 
 
 def crosschannelnormalization(alpha=1e-4, k=2, beta=0.75, n=5, **kwargs):
@@ -14,6 +15,7 @@ def crosschannelnormalization(alpha=1e-4, k=2, beta=0.75, n=5, **kwargs):
 
     def f(X):
         b, ch, r, c = X.shape
+        r = tf.shape(X)[2]
         half = n // 2
         square = K.square(X)
         extra_channels = K.spatial_2d_padding(square, ((0, 0), (half, half)))        
@@ -22,7 +24,7 @@ def crosschannelnormalization(alpha=1e-4, k=2, beta=0.75, n=5, **kwargs):
         #extra_channels = K.permute_dimensions(extra_channels, (0, 3, 1, 2))
         scale = k
         for i in range(n):
-            scale += alpha * extra_channels[:, :, i:i + int(r), :]
+            scale += alpha * extra_channels[:, :, i:i + r, :]
         scale = scale ** beta
         return X / scale
 
@@ -76,9 +78,10 @@ class Softmax4D(Layer):
         pass
 
     def call(self, x, mask=None):
-        e = K.exp(x - K.max(x, axis=self.axis, keepdims=True))
-        s = K.sum(e, axis=self.axis, keepdims=True)
-        return e / s
+        #e = K.exp(x - K.max(x, axis=self.axis, keepdims=True))
+        #s = K.sum(e, axis=self.axis, keepdims=True)
+        #return e / s
+        return tf.nn.softmax(x)
 
     def get_output_shape_for(self, input_shape):
         return input_shape
