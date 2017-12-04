@@ -44,6 +44,7 @@ def main():
     pos_rgt = 0
     for i in os.listdir(posedge_path):
         img = cv2.imread(posedge_path+i)
+        img = img[:, :, ::-1]
         if img.shape[0] < 227 or img.shape[1] < 227:
             continue
         result = model.predict(np.array([img]))
@@ -56,6 +57,7 @@ def main():
     neg_rgt = 0
     for i in os.listdir(negedge_path):
         img = cv2.imread(negedge_path+i)
+        img = img[:, :, ::-1]
         if img.shape[0] < 227 or img.shape[1] < 227:
             continue
         result = model.predict(np.array([img]))
@@ -68,6 +70,7 @@ def main():
     bck_rgt = 0
     for i in os.listdir(background_path):
         img = cv2.imread(background_path+i)
+        img = img[:, :, ::-1]
         if img.shape[0] < 227 or img.shape[1] < 227:
             continue
         result = model.predict(np.array([img]))

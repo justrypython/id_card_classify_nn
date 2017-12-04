@@ -11,7 +11,7 @@ import icdar
 def main():
     #-----------------------------------------------------------------
     # 1: Set some necessary parameters
-    data_path = 'model/tf_alexnet_weights.h5'
+    data_path = 'model/convnet_227_weights_epoch08_loss0.0016.h5'
     size = 227
     labels = {'0': 0,
               '1': 1,
@@ -31,9 +31,8 @@ def main():
     # 2: Build the Keras model
     sgd = SGD(lr=0.01, decay=5e-4, momentum=0.9, nesterov=True)
     
-    model = convnet('alexnet', heatmap=True)
+    model = convnet('alexnet', weights_path=data_path, heatmap=False)
     model.compile(optimizer=sgd, loss='mse', metrics=['accuracy'])
-    model.load_weights(data_path)
 
     #-----------------------------------------------------------------
     # 4: Instantiate an encoder that can encode ground truth labels into 
