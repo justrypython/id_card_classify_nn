@@ -10,6 +10,8 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, T
 from convnets import convnet
 import datetime
 
+os.environ['CUDA_VISIBLE_DEVICES'] = ''
+
 
 def predict(result, thres=0.99):
     result[result>thres] = 1
@@ -27,7 +29,7 @@ def predict(result, thres=0.99):
 def main():
     #-----------------------------------------------------------------
     # 1: Set some necessary parameters
-    weights_path = 'model/convnet_227_weights_epoch08_loss0.0016.h5'
+    weights_path = 'model/v4_0_convnet_227_weights_epoch03_loss0.0009.h5'
 
     #-----------------------------------------------------------------
     # 2: Build the Keras model
@@ -45,6 +47,9 @@ def main():
     for i in os.listdir(posedge_path):
         img = cv2.imread(posedge_path+i)
         img = img[:, :, ::-1]
+        factor = min(img.shape[0]/227.0, img.shape[1]/227.0)
+        reshape = (int(img.shape[1]/factor), int(img.shape[0]/factor))
+        img = cv2.resize(img, reshape)
         if img.shape[0] < 227 or img.shape[1] < 227:
             continue
         result = model.predict(np.array([img]))
@@ -58,6 +63,9 @@ def main():
     for i in os.listdir(negedge_path):
         img = cv2.imread(negedge_path+i)
         img = img[:, :, ::-1]
+        factor = min(img.shape[0]/227.0, img.shape[1]/227.0)
+        reshape = (int(img.shape[1]/factor), int(img.shape[0]/factor))
+        img = cv2.resize(img, reshape)
         if img.shape[0] < 227 or img.shape[1] < 227:
             continue
         result = model.predict(np.array([img]))
@@ -71,6 +79,9 @@ def main():
     for i in os.listdir(background_path):
         img = cv2.imread(background_path+i)
         img = img[:, :, ::-1]
+        factor = min(img.shape[0]/227.0, img.shape[1]/227.0)
+        reshape = (int(img.shape[1]/factor), int(img.shape[0]/factor))
+        img = cv2.resize(img, reshape)
         if img.shape[0] < 227 or img.shape[1] < 227:
             continue
         result = model.predict(np.array([img]))

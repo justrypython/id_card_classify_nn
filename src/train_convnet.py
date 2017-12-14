@@ -11,7 +11,7 @@ import icdar
 def main():
     #-----------------------------------------------------------------
     # 1: Set some necessary parameters
-    data_path = 'model/convnet_227_weights_epoch08_loss0.0016.h5'
+    data_path = 'model/v2_0_convnet_227_weights_epoch05_loss0.0033.h5'
     size = 227
     labels = {'0': 0,
               '1': 1,

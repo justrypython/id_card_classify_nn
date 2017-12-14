@@ -14,14 +14,14 @@ import datetime
 def main():
     #-----------------------------------------------------------------
     # 1: Set some necessary parameters
-    weights_path = 'model/v2_0_convnet_227_weights_epoch01_loss0.0059.h5'
+    weights_path = 'model/v4_0_convnet_227_weights_epoch03_loss0.0009.h5'
 
     #-----------------------------------------------------------------
     # 2: Build the Keras model
     model = convnet('alexnet', weights_path=weights_path, heatmap=True)
     
     path = '/media/zhaoke/806602c3-72ac-4719-b178-abc72b3fa783/share/10000id_part/'
-    dst_path = '/media/zhaoke/806602c3-72ac-4719-b178-abc72b3fa783/share/10000id_part_classified_1/'
+    dst_path = '/media/zhaoke/806602c3-72ac-4719-b178-abc72b3fa783/share/10000id_part_classified_2/'
     
     bad_case = ['/media/zhaoke/806602c3-72ac-4719-b178-abc72b3fa783/share/10000id_part/1YHK/3/3/943_songjing/1.jpg']
     
@@ -43,7 +43,9 @@ def main():
             continue
         elif img.shape[0] < 227 or img.shape[1] < 227:
             continue
-        factor = min(img.shape[0]/720.0, img.shape[1]/1280.0)
+        #factor = min(img.shape[0]/720.0, img.shape[1]/1280.0)
+        #reshape = (int(img.shape[1]/factor), int(img.shape[0]/factor))
+        factor = min(img.shape[0]/227.0, img.shape[1]/227.0)
         reshape = (int(img.shape[1]/factor), int(img.shape[0]/factor))
         raw_img = img.copy()
         img = cv2.resize(img, reshape)
@@ -53,13 +55,13 @@ def main():
         result = predict(result)
         if result == 0:
             dst_img_path = os.path.join(dst_path, 'bgd', '%d_'%cnt+i[-i[::-1].find('/'):])
-            cv2.imwrite(dst_img_path, raw_img)
+            cv2.imwrite(dst_img_path, img[:, :, ::-1])
         elif result == 1:
             dst_img_path = os.path.join(dst_path, 'neg', '%d_'%cnt+i[-i[::-1].find('/'):])
-            cv2.imwrite(dst_img_path, raw_img)
+            cv2.imwrite(dst_img_path, img[:, :, ::-1])
         else:
             dst_img_path = os.path.join(dst_path, 'pos', '%d_'%cnt+i[-i[::-1].find('/'):])
-            cv2.imwrite(dst_img_path, raw_img)
+            cv2.imwrite(dst_img_path, img[:, :, ::-1])
         if cnt % 20 == 0:
             print cnt
         

@@ -13,7 +13,7 @@ import icdar
 def test_noheap():
     #-----------------------------------------------------------------
     # 1: Set some necessary parameters
-    weights_path = 'model/convnet_227_weights_epoch02_loss0.0030.h5'
+    weights_path = 'model/v2_0_convnet_227_weights_epoch05_loss0.0033.h5'
     size = 227
     labels = {'0': 0,
               '1': 1,

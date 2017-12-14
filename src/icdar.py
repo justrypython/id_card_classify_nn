@@ -148,8 +148,14 @@ def crop_area(im, polys, tags, crop_background=False, max_tries=50):
             xx = np.random.choice(w_axis_0, size=1)[0]
             yy = np.random.choice(h_axis_0, size=1)[0]
         else:
-            xx = np.random.choice(w_axis_1, size=1)[0]
-            yy = np.random.choice(h_axis_1, size=1)[0]
+            if len(w_axis_1) > 227:
+                xx = np.random.choice(w_axis_1[114:-113], size=1)[0]
+            else:
+                xx = np.random.choice(w_axis_1, size=1)[0]
+            if len(h_axis_1) > 227:
+                yy = np.random.choice(h_axis_1[114:-113], size=1)[0]
+            else:
+                yy = np.random.choice(h_axis_1, size=1)[0]
         chopped_box_xy = np.array([[max(0, xx-114), max(0, yy-114)], 
                                    [min(w, xx+113), max(0, yy-114)],
                                    [min(w, xx+113), min(h, yy+113)],
@@ -157,7 +163,7 @@ def crop_area(im, polys, tags, crop_background=False, max_tries=50):
         chopped_box = Polygon(chopped_box_xy)
         id_box = Polygon(polys[0])
         cross_box = id_box.intersection(chopped_box)
-        ratio = cross_box.area / 227.0 / 227.0
+        ratio = cross_box.area / min(227*227, id_box.area)
         if crop_background:
             if ratio <= 0.3:
                 minx = np.min(chopped_box_xy[:, 0])
@@ -169,7 +175,7 @@ def crop_area(im, polys, tags, crop_background=False, max_tries=50):
             else:
                 continue
         else:
-            if ratio > 0.5:
+            if ratio > 0.6:
                 minx = np.min(chopped_box_xy[:, 0])
                 maxx = np.max(chopped_box_xy[:, 0])
                 miny = np.min(chopped_box_xy[:, 1])
@@ -623,6 +629,17 @@ def generator(input_size=512, batch_size=32,
                 text_polys, text_tags = load_annoataion(txt_fn, labels)
 
                 text_polys, text_tags = check_and_validate_polys(text_polys, text_tags, (h, w))
+                maxx = np.max(text_polys[0, :, 0])
+                maxy = np.max(text_polys[0, :, 1])
+                minx = np.min(text_polys[0, :, 0])
+                miny = np.min(text_polys[0, :, 1])
+                maxhw = max(maxx-minx, maxy-miny)
+                factor = maxhw/input_size
+                factor *= 1 + np.random.random()
+                if factor > 1.0:
+                    reshape = (int(w/factor), int(h/factor))
+                    im = cv2.resize(im, reshape)
+                    text_polys = text_polys/factor
                 # if text_polys.shape[0] == 0:
                 #     continue
                 # random scale this image
@@ -812,12 +829,20 @@ if __name__ == '__main__':
     nb_classes = 6
     b = indices_to_one_hot(a, nb_classes)
     c = one_hot_to_indices(b)
-    a = generator(input_size=227, batch_size=4, labels=labels, vis=False)
+    a = generator(input_size=227, batch_size=1, labels=labels, vis=False)
     sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
     model = convnet('alexnet', heatmap=False)
     model.compile(optimizer=sgd, loss='mse', metrics=['accuracy'])
+    cnt = 0
     while True:
         img, y_true = next(a)
+        if y_true.argmax() == 0:
+            cv2.imwrite('results/bgd/%d.jpg'%cnt, img[0])
+        elif y_true.argmax() == 1:
+            cv2.imwrite('results/neg/%d.jpg'%cnt, img[0])
+        else:
+            cv2.imwrite('results/pos/%d.jpg'%cnt, img[0])
+        cnt += 1
         y_pred = model.predict(np.array(img))
         print ((y_pred - y_true)**2).mean()
         print 'end'
