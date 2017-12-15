@@ -29,7 +29,7 @@ def predict(result, thres=0.99):
 def main():
     #-----------------------------------------------------------------
     # 1: Set some necessary parameters
-    weights_path = 'model/v4_0_convnet_227_weights_epoch03_loss0.0009.h5'
+    weights_path = 'model/v4_1_convnet_227_weights_epoch04_loss0.0042.h5'
 
     #-----------------------------------------------------------------
     # 2: Build the Keras model

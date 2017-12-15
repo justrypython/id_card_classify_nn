@@ -148,14 +148,8 @@ def crop_area(im, polys, tags, crop_background=False, max_tries=50):
             xx = np.random.choice(w_axis_0, size=1)[0]
             yy = np.random.choice(h_axis_0, size=1)[0]
         else:
-            if len(w_axis_1) > 227:
-                xx = np.random.choice(w_axis_1[114:-113], size=1)[0]
-            else:
-                xx = np.random.choice(w_axis_1, size=1)[0]
-            if len(h_axis_1) > 227:
-                yy = np.random.choice(h_axis_1[114:-113], size=1)[0]
-            else:
-                yy = np.random.choice(h_axis_1, size=1)[0]
+            xx = np.random.choice(w_axis_1, size=1)[0]
+            yy = np.random.choice(h_axis_1, size=1)[0]
         chopped_box_xy = np.array([[max(0, xx-114), max(0, yy-114)], 
                                    [min(w, xx+113), max(0, yy-114)],
                                    [min(w, xx+113), min(h, yy+113)],
@@ -163,7 +157,7 @@ def crop_area(im, polys, tags, crop_background=False, max_tries=50):
         chopped_box = Polygon(chopped_box_xy)
         id_box = Polygon(polys[0])
         cross_box = id_box.intersection(chopped_box)
-        ratio = cross_box.area / min(227*227, id_box.area)
+        ratio = cross_box.area / id_box.area
         if crop_background:
             if ratio <= 0.3:
                 minx = np.min(chopped_box_xy[:, 0])
@@ -175,7 +169,7 @@ def crop_area(im, polys, tags, crop_background=False, max_tries=50):
             else:
                 continue
         else:
-            if ratio > 0.6:
+            if ratio > 0.5:
                 minx = np.min(chopped_box_xy[:, 0])
                 maxx = np.max(chopped_box_xy[:, 0])
                 miny = np.min(chopped_box_xy[:, 1])
@@ -635,7 +629,7 @@ def generator(input_size=512, batch_size=32,
                 miny = np.min(text_polys[0, :, 1])
                 maxhw = max(maxx-minx, maxy-miny)
                 factor = maxhw/input_size
-                factor *= 1 + np.random.random()
+                factor *= 1 + 3*np.random.random()
                 if factor > 1.0:
                     reshape = (int(w/factor), int(h/factor))
                     im = cv2.resize(im, reshape)
