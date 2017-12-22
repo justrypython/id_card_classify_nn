@@ -99,6 +99,8 @@ def __get_model_based_on_input_network(network):
         convnet_init = VGG_19
     elif network == 'alexnet':
         convnet_init = AlexNet
+    elif network == 'alexnet_less_dense':
+        convnet_init = AlexNet_LESS_DENSE
     elif network == 'alexnet_227':
         convnet_init = AlexNet_227
     elif network == 'alexnet_100':
@@ -287,6 +289,72 @@ def AlexNet(weights_path=None, heatmap=False):
         dense_2 = Dropout(0.5)(dense_1)
         dense_2 = Dense(4096, activation='relu', name='dense_2')(dense_2)
         dense_3 = Dropout(0.5)(dense_2)
+        dense_3 = Dense(1000, name='dense_3')(dense_3)
+        dense_4 = Dropout(0.5)(dense_3)
+        dense_4 = Dense(3, name='dense_4')(dense_4)
+        prediction = Activation('softmax', name='softmax')(dense_4)
+
+    model = Model(inputs=inputs, outputs=prediction)
+
+    if weights_path:
+        model.load_weights(weights_path)
+
+    return model
+
+
+def AlexNet_LESS_DENSE(weights_path=None, heatmap=False):
+    if heatmap:
+        inputs = Input(shape=(None, None, 3))
+    else:
+        inputs = Input(shape=(227, 227, 3))
+
+    conv_1 = Conv2D(96, (11, 11), strides=(4, 4), activation='relu',
+                           name='conv_1')(inputs)
+
+    conv_2 = MaxPooling2D((3, 3), strides=(2, 2))(conv_1)
+    conv_2 = crosschannelnormalization(name='convpool_1')(conv_2)
+    conv_2 = ZeroPadding2D((2, 2))(conv_2)
+    conv_2 = merge([
+                       Conv2D(128, (5, 5), activation='relu', name='conv_2_' + str(i + 1))(
+                           splittensor(ratio_split=2, id_split=i)(conv_2)
+                       ) for i in range(2)], mode='concat', concat_axis=-1, name='conv_2')
+
+    conv_3 = MaxPooling2D((3, 3), strides=(2, 2))(conv_2)
+    conv_3 = crosschannelnormalization()(conv_3)
+    conv_3 = ZeroPadding2D((1, 1))(conv_3)
+    conv_3 = Conv2D(384, (3, 3), activation='relu', name='conv_3')(conv_3)
+
+    conv_4 = ZeroPadding2D((1, 1))(conv_3)
+    conv_4 = merge([
+                       Conv2D(192, (3, 3), activation='relu', name='conv_4_' + str(i + 1))(
+                           splittensor(ratio_split=2, id_split=i)(conv_4)
+                       ) for i in range(2)], mode='concat', concat_axis=-1, name='conv_4')
+
+    conv_5 = ZeroPadding2D((1, 1))(conv_4)
+    conv_5 = merge([
+                       Conv2D(128, (3, 3), activation='relu', name='conv_5_' + str(i + 1))(
+                           splittensor(ratio_split=2, id_split=i)(conv_5)
+                       ) for i in range(2)], mode='concat', concat_axis=-1, name='conv_5')
+
+    dense_1 = MaxPooling2D((3, 3), strides=(2, 2), name='convpool_5')(conv_5)
+
+    if heatmap:
+        #dense_1 = Conv2D(4096, (6, 6), activation='relu', name='dense_1')(dense_1)
+        #dense_2 = Dropout(0.5)(dense_1)
+        #dense_2 = Conv2D(4096, (1, 1), activation='relu', name='dense_2')(dense_2)
+        #dense_3 = Dropout(0.5)(dense_2)
+        #dense_3 = Conv2D(1000, (1, 1), name='dense_3')(dense_3)
+        dense_3 = Conv2D(1000, (6, 6), name='dense_3')(dense_1)
+        dense_4 = Dropout(0.5)(dense_3)
+        dense_4 = Conv2D(3, (1, 1), name='dense_4')(dense_4)
+        prediction = Softmax4D(axis=1, name='softmax')(dense_4)
+    else:
+        #dense_1 = Flatten(name='flatten')(dense_1)
+        dense_3 = Flatten(name='flatten')(dense_1)
+        #dense_1 = Dense(4096, activation='relu', name='dense_1')(dense_1)
+        #dense_2 = Dropout(0.5)(dense_1)
+        #dense_2 = Dense(4096, activation='relu', name='dense_2')(dense_2)
+        #dense_3 = Dropout(0.5)(dense_2)
         dense_3 = Dense(1000, name='dense_3')(dense_3)
         dense_4 = Dropout(0.5)(dense_3)
         dense_4 = Dense(3, name='dense_4')(dense_4)

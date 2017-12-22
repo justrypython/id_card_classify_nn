@@ -1,0 +1,126 @@
+Using TensorFlow backend.
+/home/zhaoke/justrypython/id_card_classify_nn/src/convnets.py:254: UserWarning: The `merge` function is deprecated and will be removed after 08/2017. Use instead layers from `keras.layers.merge`, e.g. `add`, `concatenate`, etc.
+  ) for i in range(2)], mode='concat', concat_axis=-1, name='conv_2')
+/home/zhaoke/anaconda2/lib/python2.7/site-packages/keras/legacy/layers.py:458: UserWarning: The `Merge` layer is deprecated and will be removed after 08/2017. Use instead layers from `keras.layers.merge`, e.g. `add`, `concatenate`, etc.
+  name=name)
+/home/zhaoke/justrypython/id_card_classify_nn/src/convnets.py:265: UserWarning: The `merge` function is deprecated and will be removed after 08/2017. Use instead layers from `keras.layers.merge`, e.g. `add`, `concatenate`, etc.
+  ) for i in range(2)], mode='concat', concat_axis=-1, name='conv_4')
+/home/zhaoke/justrypython/id_card_classify_nn/src/convnets.py:271: UserWarning: The `merge` function is deprecated and will be removed after 08/2017. Use instead layers from `keras.layers.merge`, e.g. `add`, `concatenate`, etc.
+  ) for i in range(2)], mode='concat', concat_axis=-1, name='conv_5')
+2017-12-22 11:35:52.319210: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.
+2017-12-22 11:35:52.319234: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
+2017-12-22 11:35:52.319238: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
+2017-12-22 11:35:52.319256: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX2 instructions, but these are available on your machine and could speed up CPU computations.
+2017-12-22 11:35:52.319259: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use FMA instructions, but these are available on your machine and could speed up CPU computations.
+2017-12-22 11:35:52.415181: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:893] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2017-12-22 11:35:52.415635: I tensorflow/core/common_runtime/gpu/gpu_device.cc:955] Found device 0 with properties: 
+name: GeForce GTX 1050 Ti
+major: 6 minor: 1 memoryClockRate (GHz) 1.392
+pciBusID 0000:01:00.0
+Total memory: 3.94GiB
+Free memory: 3.64GiB
+2017-12-22 11:35:52.415649: I tensorflow/core/common_runtime/gpu/gpu_device.cc:976] DMA: 0 
+2017-12-22 11:35:52.415653: I tensorflow/core/common_runtime/gpu/gpu_device.cc:986] 0:   Y 
+2017-12-22 11:35:52.415659: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1045] Creating TensorFlow device (/gpu:0) -> (device: 0, name: GeForce GTX 1050 Ti, pci bus id: 0000:01:00.0)
+/home/zhaoke/anaconda2/lib/python2.7/site-packages/keras/engine/topology.py:621: UserWarning: Class `customlayers.Softmax4D` defines `get_output_shape_for` but does not override `compute_output_shape`. If this is a Keras 1 layer, please implement `compute_output_shape` to support Keras 2.
+  output_shape = self.compute_output_shape(input_shape)
+-----------227.000000------------
+start time is  2017-12-22 11:35:53.672290
+2017-12-22 11:37:02.515880: W tensorflow/core/common_runtime/bfc_allocator.cc:217] Allocator (GPU_0_bfc) ran out of memory trying to allocate 3.10GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory is available.
+2017-12-22 11:37:17.577485: W tensorflow/core/common_runtime/bfc_allocator.cc:217] Allocator (GPU_0_bfc) ran out of memory trying to allocate 3.10GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory is available.
+the posedge rate is 0.636
+the negedge rate is 0.933
+the background rate is 1.000
+the total rate is 0.818
+the total time is  0:01:26.394555
+-----------259.000000------------
+start time is  2017-12-22 11:37:20.066871
+2017-12-22 11:38:55.209145: W tensorflow/core/common_runtime/bfc_allocator.cc:217] Allocator (GPU_0_bfc) ran out of memory trying to allocate 3.10GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory is available.
+2017-12-22 11:39:01.956611: W tensorflow/core/common_runtime/bfc_allocator.cc:217] Allocator (GPU_0_bfc) ran out of memory trying to allocate 3.10GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory is available.
+the posedge rate is 0.898
+the negedge rate is 0.985
+the background rate is 1.000
+the total rate is 0.951
+the total time is  0:01:47.059612
+-----------291.000000------------
+start time is  2017-12-22 11:39:07.126512
+2017-12-22 11:39:11.688113: W tensorflow/core/common_runtime/bfc_allocator.cc:217] Allocator (GPU_0_bfc) ran out of memory trying to allocate 3.10GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory is available.
+2017-12-22 11:39:23.173714: W tensorflow/core/common_runtime/bfc_allocator.cc:217] Allocator (GPU_0_bfc) ran out of memory trying to allocate 3.10GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory is available.
+2017-12-22 11:40:17.104535: W tensorflow/core/common_runtime/bfc_allocator.cc:217] Allocator (GPU_0_bfc) ran out of memory trying to allocate 3.10GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory is available.
+2017-12-22 11:40:46.483036: W tensorflow/core/common_runtime/bfc_allocator.cc:217] Allocator (GPU_0_bfc) ran out of memory trying to allocate 3.10GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory is available.
+2017-12-22 11:40:54.019273: W tensorflow/core/common_runtime/bfc_allocator.cc:217] Allocator (GPU_0_bfc) ran out of memory trying to allocate 3.10GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory is available.
+the posedge rate is 0.969
+the negedge rate is 0.996
+the background rate is 1.000
+the total rate is 0.985
+the total time is  0:01:52.381516
+-----------323.000000------------
+start time is  2017-12-22 11:40:59.508055
+2017-12-22 11:41:01.826864: W tensorflow/core/common_runtime/bfc_allocator.cc:217] Allocator (GPU_0_bfc) ran out of memory trying to allocate 3.10GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory is available.
+the posedge rate is 0.986
+the negedge rate is 0.997
+the background rate is 0.998
+the total rate is 0.992
+the total time is  0:01:58.793717
+-----------355.000000------------
+start time is  2017-12-22 11:42:58.301801
+the posedge rate is 0.994
+the negedge rate is 0.994
+the background rate is 0.994
+the total rate is 0.994
+the total time is  0:02:00.984193
+-----------387.000000------------
+start time is  2017-12-22 11:44:59.286024
+the posedge rate is 0.998
+the negedge rate is 0.996
+the background rate is 0.984
+the total rate is 0.994
+the total time is  0:02:08.816953
+-----------419.000000------------
+start time is  2017-12-22 11:47:08.103006
+the posedge rate is 1.000
+the negedge rate is 0.993
+the background rate is 0.974
+the total rate is 0.991
+the total time is  0:02:13.001815
+-----------451.000000------------
+start time is  2017-12-22 11:49:21.104851
+the posedge rate is 1.000
+the negedge rate is 0.991
+the background rate is 0.970
+the total rate is 0.990
+the total time is  0:02:18.151429
+-----------483.000000------------
+start time is  2017-12-22 11:51:39.256310
+the posedge rate is 0.999
+the negedge rate is 0.991
+the background rate is 0.960
+the total rate is 0.987
+the total time is  0:02:24.238895
+-----------515.000000------------
+start time is  2017-12-22 11:54:03.495236
+the posedge rate is 0.997
+the negedge rate is 0.984
+the background rate is 0.936
+the total rate is 0.978
+the total time is  0:02:29.895925
+end
+
+
+
+
+-----------355.000000------------
+start time is  2017-12-22 12:13:22.157544
+the posedge rate is 0.994
+the negedge rate is 0.994
+the background rate is 0.994
+the total rate is 0.994
+the total time is  0:05:44.133110
+-----------355.000000------------
+start time is  2017-12-22 12:19:06.290684
+the posedge rate is 0.000
+the negedge rate is 1.000
+the background rate is 0.002
+the total rate is 0.325
+the total time is  0:03:35.293507
+end
