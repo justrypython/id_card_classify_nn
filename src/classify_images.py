@@ -14,7 +14,7 @@ import datetime
 def main():
     #-----------------------------------------------------------------
     # 1: Set some necessary parameters
-    weights_path = 'model/v4_0_convnet_227_weights_epoch03_loss0.0009.h5'
+    weights_path = 'model/v4_0_1_convnet_227_weights_epoch06_loss0.0012.h5'
 
     #-----------------------------------------------------------------
     # 2: Build the Keras model
@@ -47,6 +47,7 @@ def main():
         #reshape = (int(img.shape[1]/factor), int(img.shape[0]/factor))
         factor = min(img.shape[0]/227.0, img.shape[1]/227.0)
         reshape = (int(img.shape[1]/factor), int(img.shape[0]/factor))
+        reshape = (max(227, reshape[0]), max(227, reshape[1]))
         raw_img = img.copy()
         img = cv2.resize(img, reshape)
         cnt += 1

@@ -13,7 +13,14 @@ import datetime
 os.environ['CUDA_VISIBLE_DEVICES'] = ''
 
 
-def predict(result, thres=0.99):
+def predict(result, thres=0.7):
+    #result = np.squeeze(result)
+    #if len(result.shape) == 2:
+        #result = np.sum(result, axis=0)
+    #return np.argmax(result)
+    #-----------2nd generation----------------------------------------
+    #return np.argmax(result) % 3
+    #-----------1st generation----------------------------------------
     result[result>thres] = 1
     result[result<=thres] = 0
     result = np.argmax(result, axis=-1)
@@ -29,7 +36,8 @@ def predict(result, thres=0.99):
 def main():
     #-----------------------------------------------------------------
     # 1: Set some necessary parameters
-    weights_path = 'model/v4_1_convnet_227_weights_epoch04_loss0.0042.h5'
+    #weights_path = 'model/v4_0_1_convnet_227_weights_epoch06_loss0.0012.h5'
+    weights_path = 'model/v4_0_3_convnet_227_weights_epoch04_loss0.0004.h5'
 
     #-----------------------------------------------------------------
     # 2: Build the Keras model
@@ -47,7 +55,7 @@ def main():
     for i in os.listdir(posedge_path):
         img = cv2.imread(posedge_path+i)
         img = img[:, :, ::-1]
-        factor = min(img.shape[0]/227.0, img.shape[1]/227.0)
+        factor = min(img.shape[0]/512.0, img.shape[1]/512.0)
         reshape = (int(img.shape[1]/factor), int(img.shape[0]/factor))
         img = cv2.resize(img, reshape)
         if img.shape[0] < 227 or img.shape[1] < 227:
@@ -57,13 +65,16 @@ def main():
         pos_cnt += 1
         if result == 2:
             pos_rgt += 1
+        else:
+            pass
+            #cv2.imwrite('results/pos/%d.jpg'%pos_cnt, img[:, :, ::-1])
     
     neg_cnt = 0
     neg_rgt = 0
     for i in os.listdir(negedge_path):
         img = cv2.imread(negedge_path+i)
         img = img[:, :, ::-1]
-        factor = min(img.shape[0]/227.0, img.shape[1]/227.0)
+        factor = min(img.shape[0]/512.0, img.shape[1]/512.0)
         reshape = (int(img.shape[1]/factor), int(img.shape[0]/factor))
         img = cv2.resize(img, reshape)
         if img.shape[0] < 227 or img.shape[1] < 227:
@@ -73,13 +84,16 @@ def main():
         neg_cnt += 1
         if result == 1:
             neg_rgt += 1
+        else:
+            pass
+            #cv2.imwrite('results/neg/%d.jpg'%neg_cnt, img[:, :, ::-1])
     
     bck_cnt = 0
     bck_rgt = 0
     for i in os.listdir(background_path):
         img = cv2.imread(background_path+i)
         img = img[:, :, ::-1]
-        factor = min(img.shape[0]/227.0, img.shape[1]/227.0)
+        factor = min(img.shape[0]/512.0, img.shape[1]/512.0)
         reshape = (int(img.shape[1]/factor), int(img.shape[0]/factor))
         img = cv2.resize(img, reshape)
         if img.shape[0] < 227 or img.shape[1] < 227:
@@ -89,6 +103,9 @@ def main():
         bck_cnt += 1
         if result == 0:
             bck_rgt += 1
+        else:
+            pass
+            #cv2.imwrite('results/bgd/%d.jpg'%bck_cnt, img[:, :, ::-1])
         if bck_cnt > 500:
             break
         
