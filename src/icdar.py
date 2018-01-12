@@ -823,7 +823,7 @@ if __name__ == '__main__':
     nb_classes = 6
     b = indices_to_one_hot(a, nb_classes)
     c = one_hot_to_indices(b)
-    a = generator(input_size=227, batch_size=1, labels=labels, vis=False)
+    a = generator(input_size=227, batch_size=1, labels=labels, vis=True)
     sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
     model = convnet('alexnet', heatmap=False)
     model.compile(optimizer=sgd, loss='mse', metrics=['accuracy'])
